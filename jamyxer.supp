@@ -1,0 +1,40 @@
+{
+    <JackBuffErr>
+    Memcheck:Param
+    write(buf)
+    obj:/usr/lib/libpthread-2.25.so
+    obj:/usr/lib/libjack.so.0.1.0
+}
+
+{
+   <JackReachable>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   obj:/usr/lib/libjack.so.0.1.0
+   fun:call_init.part.0
+   fun:_dl_init
+   obj:/usr/lib/ld-2.25.so
+}
+
+
+{
+    <ReadlineStillReachable>
+    Memcheck:Leak
+    match-leak-kinds: reachable
+    fun:*alloc
+    ...
+    fun:readline
+}
+
+{
+    <ReadlineHistoryStillReachable>
+    Memcheck:Leak
+    match-leak-kinds: reachable
+    fun:*alloc
+    ...
+    fun:add_history
+    ...
+    fun:main
+}
+
