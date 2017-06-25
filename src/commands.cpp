@@ -261,6 +261,12 @@ CommandHandler::CommandHandler(Backend* backend) : m_backend(backend) {
         {1, output_shorts, get_outs},
         {1, {"connections", "cons", "c"}, get_cons},
 
+        {0, {"load", "l"},
+            [](std::vector<std::string> a, Backend* b){
+                b->shutdown();
+                b->settings.load();
+                return std::string("Loaded!");
+            }},
         {0, {"save", "s"},
             [](std::vector<std::string> a, Backend* b){
                 b->settings.save();

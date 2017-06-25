@@ -1,24 +1,24 @@
 {
-	"CONNECTIONS" : 
+	"CONNECTIONS" :
 	{
-		"MASTER" : 
+		"MASTER" :
 		[
 			"testchan 3",
 			"testchan 1"
 		],
-		"OTHER" : 
+		"OTHER" :
 		[
 			"testchan 1",
 			"testchan 2"
 		]
 	},
-	"INPUTS" : 
+	"INPUTS" :
 	{
 		"testchan 1" : 100.0,
 		"testchan 2" : 100.0,
 		"testchan 3" : 100.0
 	},
-	"OUTPUTS" : 
+	"OUTPUTS" :
 	{
 		"MASTER" : 100.0,
 		"OTHER" : 100.0
