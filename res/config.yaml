@@ -1,0 +1,16 @@
+INPUTS:
+    testchannel1 : 100
+    testchannel2 : 100
+    testchannel3 : 100
+
+OUTPUTS:
+    MASTER: 100
+    OTHER: 100
+
+CONNECTIONS:
+    MASTER:
+        - testchannel1
+        - testchannel3
+    OTHER:
+        - testchannel1
+        - testchannel2

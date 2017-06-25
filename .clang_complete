@@ -1,0 +1,1 @@
+-Wall -I. -I.. -ljack -lyaml-cpp -ltinyxml2 -ljsoncpp -pthread -lreadline -std=stdc++
