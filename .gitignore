@@ -1,6 +1,11 @@
 
 # Misc
 vgcore.*
+config.log
+config.status
+src/.deps/
+src/package_config.h.in
+src/stamp-h1
 
 # Vim
 
