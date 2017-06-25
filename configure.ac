@@ -8,11 +8,12 @@ AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_CONFIG_SRCDIR([src/main.cpp])
 AC_CONFIG_HEADERS([src/package_config.h])
 
-LDFLAGS="$LDFLAGS -ljack -ljsoncpp -lreadline -pthread"
+LDFLAGS="$LDFLAGS -ljack -ljsoncpp -pthread"
 
-# AC_ARG_VAR([config], [Config filetype])
-# AM_CONDITIONAL([XML_CONF],  [test $config = "xml"])
-# AM_CONDITIONAL([YAML_CONF], [test $config = "yaml"])
+AC_ARG_WITH([readline],
+            [AS_HELP_STRING([--with-readline], [use libreadline for better interactive cmd-line])],
+            CPPFLAGS="$CPPFLAGS -DWITH_READLINE"
+            LDFLAGS="$LDFLAGS -lreadline")
 
 # Checks for programs.
 AC_PROG_CXX
@@ -28,6 +29,11 @@ AC_PROG_CC
 # Checks for typedefs, structures, and compiler characteristics.
 
 # Checks for library functions.
+
+if [test $CXX = "clang++"]; then
+    echo "$CXX compiler set... using -std=c++11..."
+    CXXFLAGS="$CXXFLAGS -std=c++11"
+fi
 
 AC_CONFIG_FILES([Makefile
                  src/Makefile])

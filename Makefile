@@ -208,7 +208,7 @@ AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -g -O2
-CPPFLAGS = 
+CPPFLAGS =  -DWITH_READLINE
 CXX = clang++
 CXXDEPMODE = depmode=gcc3
 CXXFLAGS = -g -O2 -std=c++11
@@ -224,7 +224,7 @@ INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
-LDFLAGS =  -ljack -ljsoncpp -lreadline -pthread
+LDFLAGS =  -ljack -ljsoncpp -pthread -lreadline
 LIBOBJS = 
 LIBS = 
 LTLIBOBJS = 
