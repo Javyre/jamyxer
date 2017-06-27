@@ -1,6 +1,6 @@
 bin_PROGRAMS = jamyxer
 # jamyxer_SOURCES = `find . -maxdepth 1 -type f | grep '\.\(h\|cpp\)' | sed 's/.*_config.cpp//' | tr '\n' ' '`
-jamyxer_SOURCES = main.cpp main.h settings.h backend.h config_writer.h settings.cpp backend.cpp json_config.cpp commands.h commands.cpp
+jamyxer_SOURCES = main.cpp main.h settings.h backend.h config_writer.h settings.cpp backend.cpp json_config.cpp commands.h commands.cpp server.h server.cpp
 
 
 # if YAML_CONF

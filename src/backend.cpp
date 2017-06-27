@@ -4,6 +4,13 @@
 
 #include "backend.h"
 
+#define ASSERT(cond, msg)              \
+    if (!(cond)) {                     \
+        std::cerr << msg << std::endl; \
+        exit(1);                       \
+    }
+
+
 ///
 /// Constructor:
 ///     @param client_name the display name of the jack client
@@ -55,7 +62,7 @@ void Backend::setup() {
 
     // === Activate client ===
     int active = jack_activate(m_client);
-    ASSERT(active, "Could not activate client")
+    ASSERT(!active, "Could not activate client")
 }
 
 ///
@@ -66,7 +73,7 @@ void Backend::start_recon_loop() {
         while (m_try_recon) {
             if (!m_client) {
                 try {
-                    std::cout << "Attempting reconnection..." << std::endl;
+                    std::cout << "Attempting (re)connection..." << std::endl;
                     setup();
                 } catch (JackServerIsDown& e) {
                     std::cout << "Jack server is down" << std::endl;

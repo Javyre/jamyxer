@@ -32,26 +32,28 @@ class Settings{
         std::string m_filename;
 
     public:
-        class SettingsException : public std::exception {};
+        class SettingsException : public std::exception {
+            public:
+                std::string os;
+            const char* what() const throw() {
+                return os.c_str();
+            }
+        };
 
         class InputNotFound : public SettingsException {
             const std::string m_input;
             public:
-                InputNotFound(const std::string& input) : m_input(input) {}
-            const char* what() const throw() {
-                const char* out = ("Input not found: `"+m_input+"`").c_str();
-                return out;
-            }
+                InputNotFound(const std::string& input) : m_input(input) {
+                    os = "Input not found: `"+m_input+"`";
+                }
         };
 
         class OutputNotFound : public SettingsException {
             const std::string m_output;
             public:
-                OutputNotFound(const std::string& output) : m_output(output) {}
-            const char* what() const throw() {
-                const char* out = ("Output not found: `"+m_output+"`").c_str();
-                return out;
-            }
+                OutputNotFound(const std::string& output) : m_output(output) {
+                    os = "Output not found: `"+m_output+"`";
+                }
         };
 
         explicit Settings(const std::string filename);

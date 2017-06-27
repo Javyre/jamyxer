@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <sstream>
 
 #include <exception>
 
@@ -21,7 +22,13 @@ class CommandHandler {
         std::pair<std::string, std::vector<std::string>> parse_line(std::string);
 
     public:
-        class CommandHandlerException : public std::exception {};
+        class CommandHandlerException : public std::exception {
+            public:
+                std::string os;
+            const char * what() const throw() {
+                return os.c_str();
+            }
+        };
 
         class EmptyCommand : public CommandHandlerException {
             const char * what() const throw() {
@@ -31,14 +38,11 @@ class CommandHandler {
 
         class CommandNotFound: public CommandHandlerException {
             private:
-                const std::string m_cmd;
+                std::string m_cmd;
             public:
-                CommandNotFound(const std::string cmd) : m_cmd(cmd) {}
-
-            const char * what() const throw() {
-                const char * out = std::string("Command not found: `" + m_cmd + "`").c_str();
-                return out;
-            }
+                CommandNotFound(std::string cmd) : m_cmd(cmd) {
+                    os = std::string("Command not found: `" + m_cmd + "`");
+                }
         };
 
         class InvalidNArgs : public CommandHandlerException {
@@ -46,25 +50,17 @@ class CommandHandler {
                 const unsigned int m_nargs;
                 const unsigned int m_expected;
             public:
-                InvalidNArgs(const unsigned int expected, const unsigned int nargs) : m_nargs(nargs), m_expected(expected) {}
-
-            const char * what() const throw() {
-                const char * out = std::string("Invalid number of arguments: (expected: "
-                        +std::to_string(m_expected)+" received: "+std::to_string(m_nargs)+")").c_str();
-                return out;
-            }
+                InvalidNArgs(const unsigned int expected, const unsigned int nargs) : m_nargs(nargs), m_expected(expected) {
+                    os = std::string("Invalid number of arguments: (expected: "
+                            +std::to_string(m_expected)+" received: "+std::to_string(m_nargs)+")");
+                }
         };
 
         class CommandException : public CommandHandlerException {
-            private:
-                const std::string m_msg;
             public:
-                CommandException(const std::string msg) : m_msg(msg) {}
-
-            const char * what() const throw() {
-                const char * out = m_msg.c_str();
-                return out;
-            }
+                CommandException(std::string msg) {
+                    os = msg;
+                }
         };
 
         CommandHandler(Backend* backend);

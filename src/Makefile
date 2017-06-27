@@ -100,7 +100,8 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_jamyxer_OBJECTS = main.$(OBJEXT) settings.$(OBJEXT) \
-	backend.$(OBJEXT) json_config.$(OBJEXT) commands.$(OBJEXT)
+	backend.$(OBJEXT) json_config.$(OBJEXT) commands.$(OBJEXT) \
+	server.$(OBJEXT)
 jamyxer_OBJECTS = $(am_jamyxer_OBJECTS)
 jamyxer_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_$(V))
@@ -174,12 +175,12 @@ CTAGS = ctags
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/package_config.h.in \
 	$(top_srcdir)/depcomp
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ACLOCAL = ${SHELL} /home/javier/Code/cpp/Fyrelang3/missing aclocal-1.15
+ACLOCAL = ${SHELL} /home/javier/Code/cpp/Jamyxer/missing aclocal-1.15
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 1
-AUTOCONF = ${SHELL} /home/javier/Code/cpp/Fyrelang3/missing autoconf
-AUTOHEADER = ${SHELL} /home/javier/Code/cpp/Fyrelang3/missing autoheader
-AUTOMAKE = ${SHELL} /home/javier/Code/cpp/Fyrelang3/missing automake-1.15
+AUTOCONF = ${SHELL} /home/javier/Code/cpp/Jamyxer/missing autoconf
+AUTOHEADER = ${SHELL} /home/javier/Code/cpp/Jamyxer/missing autoheader
+AUTOMAKE = ${SHELL} /home/javier/Code/cpp/Jamyxer/missing automake-1.15
 AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
@@ -204,7 +205,7 @@ LDFLAGS =  -ljack -ljsoncpp -pthread -lreadline
 LIBOBJS = 
 LIBS = 
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /home/javier/Code/cpp/Fyrelang3/missing makeinfo
+MAKEINFO = ${SHELL} /home/javier/Code/cpp/Jamyxer/missing makeinfo
 MKDIR_P = /usr/bin/mkdir -p
 OBJEXT = o
 PACKAGE = jamyxer
@@ -219,10 +220,10 @@ SET_MAKE =
 SHELL = /bin/sh
 STRIP = 
 VERSION = 1.0
-abs_builddir = /home/javier/Code/cpp/Fyrelang3/src
-abs_srcdir = /home/javier/Code/cpp/Fyrelang3/src
-abs_top_builddir = /home/javier/Code/cpp/Fyrelang3
-abs_top_srcdir = /home/javier/Code/cpp/Fyrelang3
+abs_builddir = /home/javier/Code/cpp/Jamyxer/src
+abs_srcdir = /home/javier/Code/cpp/Jamyxer/src
+abs_top_builddir = /home/javier/Code/cpp/Jamyxer
+abs_top_srcdir = /home/javier/Code/cpp/Jamyxer
 ac_ct_CC = gcc
 ac_ct_CXX = 
 am__include = include
@@ -242,7 +243,7 @@ host_alias =
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/javier/Code/cpp/Fyrelang3/install-sh
+install_sh = ${SHELL} /home/javier/Code/cpp/Jamyxer/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -263,7 +264,7 @@ top_build_prefix = ../
 top_builddir = ..
 top_srcdir = ..
 # jamyxer_SOURCES = `find . -maxdepth 1 -type f | grep '\.\(h\|cpp\)' | sed 's/.*_config.cpp//' | tr '\n' ' '`
-jamyxer_SOURCES = main.cpp main.h settings.h backend.h config_writer.h settings.cpp backend.cpp json_config.cpp commands.h commands.cpp
+jamyxer_SOURCES = main.cpp main.h settings.h backend.h config_writer.h settings.cpp backend.cpp json_config.cpp commands.h commands.cpp server.h server.cpp
 all: package_config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -370,6 +371,7 @@ include ./$(DEPDIR)/backend.Po
 include ./$(DEPDIR)/commands.Po
 include ./$(DEPDIR)/json_config.Po
 include ./$(DEPDIR)/main.Po
+include ./$(DEPDIR)/server.Po
 include ./$(DEPDIR)/settings.Po
 
 .cpp.o:

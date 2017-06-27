@@ -31,7 +31,9 @@ class JSONWriter : public ConfigWriter {
             m_input_volumes = {};
 
             for (std::string input : root["INPUTS"].getMemberNames()) {
+#ifdef DEBUG
                 std::cout << input+": " << root["INPUTS"][input].asFloat() << std::endl;
+#endif
                 m_input_volumes[input] = root["INPUTS"][input].asFloat() / 100;
             }
 
@@ -42,7 +44,9 @@ class JSONWriter : public ConfigWriter {
             m_output_volumes = {};
 
             for (std::string output : root["OUTPUTS"].getMemberNames()) {
+#ifdef DEBUG
                 std::cout << output+": " << root["OUTPUTS"][output].asFloat() << std::endl;
+#endif
                 m_output_volumes[output] = root["OUTPUTS"][output].asFloat() / 100;
             }
 
@@ -57,7 +61,9 @@ class JSONWriter : public ConfigWriter {
                 std::vector<std::string> connected;
                 for (Json::Value input : connection) {
                     connected.push_back(input.asString());
+#ifdef DEBUG
                     std::cout << output+"->"+input.asString() << std::endl;
+#endif
                 }
                 m_connections[output] = connected;
             }

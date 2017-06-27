@@ -10,12 +10,6 @@
 #include <jack/jack.h>
 #include "settings.h"
 
-#define ASSERT(cond, msg)              \
-    if (cond) {                        \
-        std::cerr << msg << std::endl; \
-        exit(1);                       \
-    }
-
 class Backend {
     private:
         const std::string m_client_name;

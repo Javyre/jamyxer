@@ -204,7 +204,9 @@ commands_map_t gen_abrevs(abrevs_list_t abrevs, std::string ww="") {
 
         if (std::get<0>(g) == 0) {
             for (std::string w : shorts) {
+#ifdef DEBUG
                 std::cout << "alias: " << ww+w << std::endl;
+#endif
                 commands[ww+w] = {0, func};
 
                 abrevs_list_t sub_abrevs;
@@ -310,6 +312,10 @@ std::pair<std::string, std::vector<std::string>> CommandHandler::parse_line(std:
     std::string cmd = *(iter++);
     std::vector<std::string> args;
 
+#ifdef DEBUG
+    bool flag = iter != rend;
+#endif
+
     // Unstring `"` and push_back to args vector
     for (;iter!=rend; iter++) {
         std::string arg = *iter;
@@ -319,9 +325,13 @@ std::pair<std::string, std::vector<std::string>> CommandHandler::parse_line(std:
             arg.pop_back();
         args.push_back(arg);
 
+#ifdef DEBUG
         std::cout << arg << " | ";
     }
-    std::cout << std::endl;
+    if (flag) std::cout << std::endl;
+#else
+    }
+#endif
 
     return {cmd, args};
 

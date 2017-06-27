@@ -38,3 +38,13 @@
     fun:main
 }
 
+{
+    <ReadlineHistoryStillReachable(Thread)>
+    Memcheck:Leak
+    match-leak-kinds: reachable
+    fun:*alloc
+    ...
+    fun:add_history
+    ...
+    fun:start_thread
+}
