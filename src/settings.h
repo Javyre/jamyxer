@@ -85,6 +85,7 @@ class Settings{
         void connect(const std::string& input, const std::string& output);
         void disconnect(const std::string& input, const std::string& output);
 
+        const bool is_connected(const std::string& input, const std::string& output);
 
 };
 

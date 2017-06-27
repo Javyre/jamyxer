@@ -1,26 +1,38 @@
 {
-	"CONNECTIONS" : 
-	{
-		"MASTER" : 
-		[
-			"testchan 3",
-			"testchan 1"
-		],
-		"OTHER" : 
-		[
-			"testchan 1",
-			"testchan 2"
-		]
-	},
-	"INPUTS" : 
-	{
-		"testchan 1" : 100.0,
-		"testchan 2" : 100.0,
-		"testchan 3" : 100.0
-	},
-	"OUTPUTS" : 
-	{
-		"MASTER" : 100.0,
-		"OTHER" : 100.0
-	}
+    "CONNECTIONS" :
+    {
+        "MASTER" :
+        [
+            "Mic",
+            "PrivMPD",
+            "PulseSink",
+            "PulseSink2"
+        ],
+        "PUBLIC" :
+        [
+            "Mic",
+            "PubMPD"
+        ],
+        "PRIVATE" :
+        [
+            "PrivMPD",
+            "PulseSink",
+            "PulseSink2"
+        ]
+    },
+    "INPUTS" :
+    {
+        "PulseSink" : 100,
+        "MPD"       : 100,
+        "Mic"       : 90,
+        "PrivMPD"   : 100,
+        "PubMPD"    : 100,
+        "PulseSink2": 100
+    },
+    "OUTPUTS" :
+    {
+        "MASTER"  : 100.0,
+        "PUBLIC"  : 100.0,
+        "PRIVATE" : 100.0
+    }
 }

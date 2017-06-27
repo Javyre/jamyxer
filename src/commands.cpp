@@ -48,16 +48,19 @@ std::string vol(std::vector<std::string> args, Backend* backend) {
 
 }
 
-std::string connect_command(std::vector<std::string> args, Backend* backend, const bool disconnect=false) {
+std::string connect_command(std::vector<std::string> args, Backend* backend, int action=+1) {
     if (args.size() != 2)
         throw CommandHandler::InvalidNArgs(4, args.size());
 
     std::string input  = args[0];
     std::string output = args[1];
 
-    if (!disconnect)
+    if (action == 0)
+        action = backend->settings.is_connected(input, output) ? -1 : +1;
+
+    if (action == +1)
         backend->settings.connect(input, output);
-    else
+    else if (action == -1)
         backend->settings.disconnect(input, output);
 
     std::string connected_inputs;
@@ -68,18 +71,22 @@ std::string connect_command(std::vector<std::string> args, Backend* backend, con
 }
 
 std::string dcon(std::vector<std::string> args, Backend* backend) {
-    return connect_command(args, backend, true);
+    return connect_command(args, backend, -1);
 }
 
 std::string con(std::vector<std::string> args, Backend* backend) {
-    return connect_command(args, backend, false);
+    return connect_command(args, backend, +1);
+}
+
+std::string tcon(std::vector<std::string> args, Backend* backend) {
+    return connect_command(args, backend, 0);
 }
 
 std::string get(std::vector<std::string> args, Backend* backend) {
     if (args.size() < 1)
         throw CommandHandler::InvalidNArgs(1, args.size());
     std::string target_type = args[0];
-    if (target_type == "connections" && args.size() < 2)
+    if ((target_type == "connections" || target_type == "cons") && args.size() < 2)
         throw CommandHandler::InvalidNArgs(2, args.size());
 
     std::function<std::vector<std::string>()> get_func;
@@ -257,6 +264,7 @@ CommandHandler::CommandHandler(Backend* backend) : m_backend(backend) {
 
         {0, {"connect", "con", "c"}, con},
         {0, {"disconnect", "dconnect", "discon", "dcon", "disc", "dc"}, dcon},
+        {0, {"togconnect", "tconnect", "togcon", "tcon", "togc", "tc"}, tcon},
 
         {0, get_shorts, get},
         {1, input_shorts, get_ins},

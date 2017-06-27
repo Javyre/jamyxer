@@ -163,3 +163,11 @@ void Settings::connect(const std::string& input, const std::string& output) {
 void Settings::disconnect(const std::string& input, const std::string& output) {
     m_connections[output].erase(std::find(m_connections[output].begin(), m_connections[output].end(), input));
 }
+
+
+///
+/// Return true if input and output are connected
+///
+const bool Settings::is_connected(const std::string& input, const std::string& output) {
+    return (std::find(m_connections[output].begin(), m_connections[output].end(), input) != m_connections[output].end());
+}
