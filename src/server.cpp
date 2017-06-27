@@ -141,6 +141,8 @@ void Server::listener() {
                         HNDL_EXCPT();
                     }
                     s = ::send(i, response.c_str(), response.length()-1, 0);
+                    std::cout << response;
+
                     ASSERT(s != -1, "Error in send");
                 }
                 std::memset(buf, 0, sizeof buf);

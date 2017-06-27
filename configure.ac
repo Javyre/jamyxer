@@ -15,6 +15,10 @@ AC_ARG_WITH([readline],
             CPPFLAGS="$CPPFLAGS -DWITH_READLINE"
             LDFLAGS="$LDFLAGS -lreadline")
 
+AC_ARG_ENABLE([debug],
+              [AS_HELP_STRING([--enable-debug], [enable DEBUG flag in compilation])],
+              CPPFLAGS="$CPPFLAGS -DDEBUG")
+
 # Checks for programs.
 AC_PROG_CXX
 AC_PROG_CC

@@ -96,6 +96,18 @@ std::string get(std::vector<std::string> args, Backend* backend) {
         get_func = [&](){ return backend->settings.get_outputs(); };
     } else if (target_type == "connections" || target_type == "cons") {
         get_func = [&](){ return backend->settings.get_connections(args[1]); };
+        if (!backend->settings.is_output(args[1], true))
+            throw CommandHandler::CommandException("Unknown output: `"+args[1]+"`");
+    } else if (target_type == "aliases" || target_type == "als") {
+        get_func = [&](){
+            std::vector<std::string> o;
+            for (std::string a : backend->settings.get_input_aliases())
+                o.push_back(a + " : " + backend->settings.get_input_name(a));
+            o.push_back(" -------- ");
+            for (std::string a : backend->settings.get_output_aliases())
+                o.push_back(a + " : " + backend->settings.get_output_name(a));
+            return o;
+        };
     } else
         throw CommandHandler::CommandException("Unknown target_type: `"+target_type+"`");
 
@@ -189,6 +201,7 @@ CMD_ALIAS(ren, out);
 CMD_ALIAS(get, ins);
 CMD_ALIAS(get, outs);
 CMD_ALIAS(get, cons);
+CMD_ALIAS(get, als);
 
 CMD_ALIAS(vol, in);
 CMD_ALIAS(vol_in, set);
@@ -270,6 +283,7 @@ CommandHandler::CommandHandler(Backend* backend) : m_backend(backend) {
         {1, input_shorts, get_ins},
         {1, output_shorts, get_outs},
         {1, {"connections", "cons", "c"}, get_cons},
+        {1, {"aliases", "als", "a"}, get_als},
 
         {0, {"load", "l"},
             [](std::vector<std::string> a, Backend* b){

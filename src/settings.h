@@ -26,6 +26,9 @@
 
 class Settings{
     private:
+        std::map<std::string, std::string> m_input_aliases;
+        std::map<std::string, std::string> m_output_aliases;
+
         std::map<std::string, float> m_input_volumes;
         std::map<std::string, float> m_output_volumes;
         std::map<std::string, std::vector<std::string>> m_connections;
@@ -62,22 +65,38 @@ class Settings{
         void load();
         void save(); // TODO
 
+        // === name aliases ===
+        void gen_aliases();
+
+        const bool is_input_alias(const std::string& input);
+        const bool is_output_alias(const std::string& output);
+
+        const std::string get_input_name(const std::string& input);
+        const std::string get_output_name(const std::string& output);
+
+        const std::vector<std::string> get_input_aliases();
+        const std::vector<std::string> get_output_aliases();
+
+        // === get ===
         const std::vector<std::string> get_inputs();
         const std::vector<std::string> get_outputs();
 
         const std::vector<std::string> get_connections(const std::string& output);
 
-        const bool is_input(const std::string& input);
-        const bool is_output(const std::string& output);
+        const bool is_input(const std::string& input, const bool check_alias=false);
+        const bool is_output(const std::string& output, const bool check_alias=false);
 
+        const float get_input_volume(const std::string& input);
+        const float get_output_volume(const std::string& output);
+
+        const bool is_connected(const std::string& input, const std::string& output);
+
+        // === set ===
         void add_input(const std::string& name, float vol=1);
         void add_output(const std::string& name, float vol=1);
 
         void remove_input(const std::string& input);
         void remove_output(const std::string& output);
-
-        const float get_input_volume(const std::string& input);
-        const float get_output_volume(const std::string& output);
 
         void set_input_volume(const std::string& input, float new_vol);
         void set_output_volume(const std::string& output, float new_vol);
@@ -85,7 +104,6 @@ class Settings{
         void connect(const std::string& input, const std::string& output);
         void disconnect(const std::string& input, const std::string& output);
 
-        const bool is_connected(const std::string& input, const std::string& output);
 
 };
 
