@@ -62,7 +62,7 @@ void Server::listener() {
 
     ::freeaddrinfo(ai);
 
-    s = ::listen(listener, 10);
+    s = ::listen(listener, 20);
     ASSERT(s != -1, "Error in listen");
 
     FD_SET(listener, &master);
@@ -134,16 +134,20 @@ void Server::listener() {
 
                     std::string response;
                     try {
-                        response = cmd_handler.run(std::string(buf))+'\n';
+                        response = cmd_handler.run(std::string(buf), i)+'\n';
                     } catch (CommandHandler::CommandHandlerException& e) {
                         HNDL_EXCPT();
                     } catch (Settings::SettingsException& e) {
                         HNDL_EXCPT();
                     }
-                    s = ::send(i, response.c_str(), response.length()-1, 0);
-                    std::cout << response;
+                    if (response != "IS LISTENER\n") {
+                        s = ::send(i, response.c_str(), response.length()-1, 0);
+                        std::cout << response;
 
-                    ASSERT(s != -1, "Error in send");
+                        ASSERT(s != -1, "Error in send");
+                    } else {
+                        std::cout << "listener has been set (fd: " << i << ")\n";
+                    }
                 }
                 std::memset(buf, 0, sizeof buf);
             }

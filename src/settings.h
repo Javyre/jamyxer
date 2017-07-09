@@ -34,6 +34,9 @@ class Settings{
         std::map<std::string, std::vector<std::string>> m_connections;
         std::string m_filename;
 
+        std::map<std::string, std::vector<int>> m_input_volume_listeners;
+        std::map<std::string, std::vector<int>> m_output_volume_listeners;
+
     public:
         class SettingsException : public std::exception {
             public:
@@ -104,7 +107,9 @@ class Settings{
         void connect(const std::string& input, const std::string& output);
         void disconnect(const std::string& input, const std::string& output);
 
-
+        // === misc ===
+        void add_input_volume_listener(const std::string& input, const int file_descriptor);
+        void add_output_volume_listener(const std::string& output, const int file_descriptor);
 };
 
 #endif

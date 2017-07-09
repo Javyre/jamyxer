@@ -10,7 +10,7 @@
 
 #include <exception>
 
-typedef std::string (* commandref_t)(std::vector<std::string>, Backend*);
+typedef std::string (* commandref_t)(std::vector<std::string>, Backend*, const int);
 typedef std::pair<unsigned int, commandref_t> command_t;
 typedef std::map<std::string, command_t> commands_map_t;
 typedef std::vector<std::tuple<unsigned int, std::vector<std::string>, commandref_t>> abrevs_list_t;
@@ -64,7 +64,7 @@ class CommandHandler {
         };
 
         CommandHandler(Backend* backend);
-        std::string run(std::string cmd);
+        std::string run(std::string cmd, const int fd=-1);
 
 };
 

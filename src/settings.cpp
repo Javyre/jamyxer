@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <yaml-cpp/yaml.h>
+#include <sys/socket.h>
 
 ///
 /// Constructor:
@@ -233,6 +234,13 @@ void Settings::set_input_volume(const std::string& input, float new_vol) {
     new_vol = new_vol > 1 ? 1 : new_vol;
     new_vol = new_vol < 0 ? 0 : new_vol;
     m_input_volumes[i] = new_vol;
+
+    std::string noti = std::to_string(new_vol*100);
+    for (int fd : m_input_volume_listeners[i]) {
+        ::send(fd, noti.c_str(), noti.length()-1, 0);
+        std::cout << "sent response to listener on fd: " << fd << "\n";
+    }
+    m_input_volume_listeners[i] = {};
 }
 
 ///
@@ -247,6 +255,13 @@ void Settings::set_output_volume(const std::string& output, float new_vol) {
     new_vol = new_vol > 1 ? 1 : new_vol;
     new_vol = new_vol < 0 ? 0 : new_vol;
     m_output_volumes[o] = new_vol;
+
+    std::string noti = std::to_string(new_vol*100);
+    for (int fd : m_output_volume_listeners[o]) {
+        ::send(fd, noti.c_str(), noti.length()-1, 0);
+        std::cout << "sent response to listener on fd: " << fd << "\n";
+    }
+    m_output_volume_listeners[o] = {};
 }
 
 ///
@@ -295,4 +310,26 @@ const bool Settings::is_connected(const std::string& input, const std::string& o
         throw OutputNotFound(o);
 
     return (std::find(m_connections[o].begin(), m_connections[o].end(), i) != m_connections[o].end());
+}
+
+///
+/// Add an input volume listener
+///
+void Settings::add_input_volume_listener(const std::string& input, const int file_descriptor) {
+    const std::string i = get_input_name(input);
+    if (!is_input(i))
+        throw InputNotFound(i);
+
+    m_input_volume_listeners[i].push_back(file_descriptor);
+}
+
+///
+/// Add an output volume listener
+///
+void Settings::add_output_volume_listener(const std::string& output, const int file_descriptor) {
+    const std::string o = get_output_name(output);
+    if (!is_output(o))
+        throw OutputNotFound(o);
+
+    m_output_volume_listeners[o].push_back(file_descriptor);
 }

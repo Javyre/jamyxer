@@ -2,7 +2,7 @@
 #include <utility>
 #include <regex>
 
-std::string vol(std::vector<std::string> args, Backend* backend) {
+std::string vol(std::vector<std::string> args, Backend* backend, const int fd) {
     std::string target_type;
     std::string action;
     std::string target;
@@ -70,19 +70,19 @@ std::string connect_command(std::vector<std::string> args, Backend* backend, int
     return std::string("Currently connected ports for output: `"+output+"`:"+connected_inputs);
 }
 
-std::string dcon(std::vector<std::string> args, Backend* backend) {
+std::string dcon(std::vector<std::string> args, Backend* backend, const int fd) {
     return connect_command(args, backend, -1);
 }
 
-std::string con(std::vector<std::string> args, Backend* backend) {
+std::string con(std::vector<std::string> args, Backend* backend, const int fd) {
     return connect_command(args, backend, +1);
 }
 
-std::string tcon(std::vector<std::string> args, Backend* backend) {
+std::string tcon(std::vector<std::string> args, Backend* backend, const int fd) {
     return connect_command(args, backend, 0);
 }
 
-std::string get(std::vector<std::string> args, Backend* backend) {
+std::string get(std::vector<std::string> args, Backend* backend, const int fd) {
     if (args.size() < 1)
         throw CommandHandler::InvalidNArgs(1, args.size());
     std::string target_type = args[0];
@@ -120,7 +120,7 @@ std::string get(std::vector<std::string> args, Backend* backend) {
     return out;
 }
 
-std::string add(std::vector<std::string> args, Backend* backend) {
+std::string add(std::vector<std::string> args, Backend* backend, const int fd) {
     if (args.size() < 2)
         throw CommandHandler::InvalidNArgs(2, args.size());
     std::string target_type = args[0];
@@ -128,9 +128,9 @@ std::string add(std::vector<std::string> args, Backend* backend) {
     float vol = (args.size() > 3) ? std::stof(args[2]) : 1;
 
     bool input;
-    if (target_type != "input" || target_type != "output")
+    if (target_type != "out" || target_type != "output")
         input = true;
-    else if (target_type != "in" || target_type != "out")
+    else if (target_type != "input" || target_type != "in")
         input = false;
     else
         throw CommandHandler::CommandException("Invalid target_type: `"+target_type+"`");
@@ -144,7 +144,7 @@ std::string add(std::vector<std::string> args, Backend* backend) {
     return "Added...";
 }
 
-std::string rem(std::vector<std::string> args, Backend* backend) {
+std::string rem(std::vector<std::string> args, Backend* backend, const int fd) {
     if (args.size() < 2)
         throw CommandHandler::InvalidNArgs(2, args.size());
     std::string target_type = args[0];
@@ -163,7 +163,7 @@ std::string rem(std::vector<std::string> args, Backend* backend) {
     return "Removed...";
 }
 
-std::string ren(std::vector<std::string> args, Backend* backend) {
+std::string ren(std::vector<std::string> args, Backend* backend, const int fd) {
     if (args.size() < 3)
         throw CommandHandler::InvalidNArgs(3, args.size());
     std::string target_type = args[0];
@@ -183,10 +183,25 @@ std::string ren(std::vector<std::string> args, Backend* backend) {
     return "Renamed "+old_name+" -> "+new_name+" ...";
 }
 
+std::string listn(std::vector<std::string> args, Backend* backend, const int fd) {
+    if (args.size() < 2)
+        throw CommandHandler::InvalidNArgs(2, args.size());
+    std::string target_type = args[0];
+    std::string target_name = args[1];
+
+    if (target_type == "input" || target_type == "in")
+        backend->settings.add_input_volume_listener(target_name, fd);
+    else if (target_type == "output" || target_type == "out")
+        backend->settings.add_output_volume_listener(target_name, fd);
+
+    // signal server not to send response
+    return "IS LISTENER";
+}
+
 #define CMD_ALIAS(o, e) \
-std::string o##_##e(std::vector<std::string> args, Backend* backend){ \
+std::string o##_##e(std::vector<std::string> args, Backend* backend, const int fd){ \
     args.insert(args.begin(), std::string( #e )); \
-    return o (args, backend); \
+    return o (args, backend, fd); \
 }
 
 CMD_ALIAS(add, in);
@@ -197,6 +212,9 @@ CMD_ALIAS(rem, out);
 
 CMD_ALIAS(ren, in);
 CMD_ALIAS(ren, out);
+
+CMD_ALIAS(listn, in);
+CMD_ALIAS(listn, out);
 
 CMD_ALIAS(get, ins);
 CMD_ALIAS(get, outs);
@@ -286,13 +304,13 @@ CommandHandler::CommandHandler(Backend* backend) : m_backend(backend) {
         {1, {"aliases", "als", "a"}, get_als},
 
         {0, {"load", "l"},
-            [](std::vector<std::string> a, Backend* b){
+            [](std::vector<std::string> a, Backend* b, const int fd){
                 b->shutdown();
                 b->settings.load();
                 return std::string("Loaded!");
             }},
         {0, {"save", "s"},
-            [](std::vector<std::string> a, Backend* b){
+            [](std::vector<std::string> a, Backend* b, const int fd){
                 b->settings.save();
                 return std::string("Saved!");
             }},
@@ -308,6 +326,10 @@ CommandHandler::CommandHandler(Backend* backend) : m_backend(backend) {
         {0, {"rename", "ren", "rn"}, ren},
         {1, input_shorts, ren_in},
         {1, output_shorts, ren_out},
+
+        {0, {"listen", "listn", "l"}, listn},
+        {1, input_shorts, listn_in},
+        {1, output_shorts, listn_out},
     };
 
     m_commands = gen_abrevs(abrevs);
@@ -362,14 +384,14 @@ std::pair<std::string, std::vector<std::string>> CommandHandler::parse_line(std:
 ///
 /// Parse and run `cmd` line and return output of command
 ///
-std::string CommandHandler::run(std::string cmd_line) {
+std::string CommandHandler::run(std::string cmd_line, const int fd) {
     auto cmd_and_args = parse_line(cmd_line);
     std::string cmd = cmd_and_args.first;
     std::vector<std::string> args = cmd_and_args.second;
 
     if (m_commands.find(cmd) != m_commands.end()) {
         if (m_commands[cmd].first == args.size() || m_commands[cmd].first == 0)
-            return m_commands[cmd].second(args, m_backend);
+            return m_commands[cmd].second(args, m_backend, fd);
         else
             throw InvalidNArgs(m_commands[cmd].first, args.size());
     } else {
