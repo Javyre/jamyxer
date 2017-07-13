@@ -57,7 +57,7 @@ std::string vol(std::vector<std::string> args, Backend* backend, const int fd) {
 
 std::string connect_command(std::vector<std::string> args, Backend* backend, int action=+1) {
     if (args.size() != 2)
-        throw CommandHandler::InvalidNArgs(4, args.size());
+        throw CommandHandler::InvalidNArgs(2, args.size());
 
     std::string input  = args[0];
     std::string output = args[1];
