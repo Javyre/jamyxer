@@ -14,7 +14,7 @@ std::string vol(std::vector<std::string> args, Backend* backend, const int fd) {
     } else
         throw CommandHandler::InvalidNArgs(3, args.size());
 
-    if (action != "get") {
+    if (action != "get" && action != "listen") {
         if (args.size() >= 4)
             volume = std::stof(args[3]);
         else
@@ -23,13 +23,16 @@ std::string vol(std::vector<std::string> args, Backend* backend, const int fd) {
 
     std::function<void(std::string, float)> set_function;
     std::function<float(std::string)> get_function;
+    std::function<void(std::string, int)> listen_function;
 
     if (target_type == "input" || target_type == "in") {
         set_function = [&](std::string t, float v){ backend->settings.set_input_volume(t, v); };
         get_function = [&](std::string t){ return backend->settings.get_input_volume(t); };
+        listen_function = [&](std::string t, int fd){ backend->settings.add_input_volume_listener(t, fd); };
     } else if (target_type == "output" || target_type == "out") {
         set_function = [&](std::string t, float v){ backend->settings.set_output_volume(t, v); };
         get_function = [&](std::string t){ return backend->settings.get_output_volume(t); };
+        listen_function = [&](std::string t, int fd){ backend->settings.add_output_volume_listener(t, fd); };
     } else
         throw CommandHandler::CommandException("Error: unrecognized target type: " + target_type);
 
@@ -40,7 +43,11 @@ std::string vol(std::vector<std::string> args, Backend* backend, const int fd) {
         set_function(target, get_function(target) + (volume/100));
     else if (action == "get")
         return std::to_string(get_function(target)*100);
-    else
+    else if (action == "listen") {
+        listen_function(target, fd);
+        // signal server not to send response
+        return "IS LISTENER";
+    } else
         throw CommandHandler::CommandException("Error: unrecognized action: " + action);
 
     return std::string("Current volume level for input port `" + target +
@@ -94,8 +101,12 @@ std::string get(std::vector<std::string> args, Backend* backend, const int fd) {
         get_func = [&](){ return backend->settings.get_inputs(); };
     } else if (target_type == "outputs" || target_type == "outs") {
         get_func = [&](){ return backend->settings.get_outputs(); };
-    } else if (target_type == "connections" || target_type == "cons") {
-        get_func = [&](){ return backend->settings.get_connections(args[1]); };
+    } else if (target_type == "connected" || target_type == "con") {
+        if (args.size() == 3) {
+            if (!backend->settings.is_input(args[2], true))
+                throw CommandHandler::CommandException("Unknown input: `"+args[2]+"`");
+            return std::to_string(backend->settings.is_connected(args[2], args[1]));
+        }
         if (!backend->settings.is_output(args[1], true))
             throw CommandHandler::CommandException("Unknown output: `"+args[1]+"`");
     } else if (target_type == "aliases" || target_type == "als") {
@@ -183,21 +194,6 @@ std::string ren(std::vector<std::string> args, Backend* backend, const int fd) {
     return "Renamed "+old_name+" -> "+new_name+" ...";
 }
 
-std::string listn(std::vector<std::string> args, Backend* backend, const int fd) {
-    if (args.size() < 2)
-        throw CommandHandler::InvalidNArgs(2, args.size());
-    std::string target_type = args[0];
-    std::string target_name = args[1];
-
-    if (target_type == "input" || target_type == "in")
-        backend->settings.add_input_volume_listener(target_name, fd);
-    else if (target_type == "output" || target_type == "out")
-        backend->settings.add_output_volume_listener(target_name, fd);
-
-    // signal server not to send response
-    return "IS LISTENER";
-}
-
 #define CMD_ALIAS(o, e) \
 std::string o##_##e(std::vector<std::string> args, Backend* backend, const int fd){ \
     args.insert(args.begin(), std::string( #e )); \
@@ -213,23 +209,25 @@ CMD_ALIAS(rem, out);
 CMD_ALIAS(ren, in);
 CMD_ALIAS(ren, out);
 
-CMD_ALIAS(listn, in);
-CMD_ALIAS(listn, out);
+/* CMD_ALIAS(listn, in); */
+/* CMD_ALIAS(listn, out); */
 
 CMD_ALIAS(get, ins);
 CMD_ALIAS(get, outs);
-CMD_ALIAS(get, cons);
+CMD_ALIAS(get, con);
 CMD_ALIAS(get, als);
 
 CMD_ALIAS(vol, in);
 CMD_ALIAS(vol_in, set);
 CMD_ALIAS(vol_in, mod);
 CMD_ALIAS(vol_in, get);
+CMD_ALIAS(vol_in, listen);
 
 CMD_ALIAS(vol, out);
 CMD_ALIAS(vol_out, set);
 CMD_ALIAS(vol_out, mod);
 CMD_ALIAS(vol_out, get);
+CMD_ALIAS(vol_out, listen);
 
 #undef CMD_ALIAS
 
@@ -275,23 +273,26 @@ CommandHandler::CommandHandler(Backend* backend) : m_backend(backend) {
     typedef std::vector<std::string> shorts;
     shorts input_shorts  = { "input", "in", "i" };
     shorts output_shorts = {"output", "out", "o"};
-    shorts set_shorts = {"set", "s"};
-    shorts mod_shorts = {"mod", "m"};
-    shorts get_shorts = {"get", "g"};
+    shorts set_shorts    = {"set", "s"};
+    shorts mod_shorts    = {"mod", "m"};
+    shorts get_shorts    = {"get", "g"};
+    shorts listen_shorts = {"listen", "listn", "ln"};
 
     // Initialize commands and some aliases...
     abrevs_list_t abrevs = {
         {0, {"volume", "vol", "v"}, vol},
 
-        {1, input_shorts, vol_in},
-        {2, set_shorts, vol_in_set},
-        {2, mod_shorts, vol_in_mod},
-        {2, get_shorts, vol_in_get},
+        {1, input_shorts,  vol_in},
+        {2, set_shorts,    vol_in_set},
+        {2, mod_shorts,    vol_in_mod},
+        {2, get_shorts,    vol_in_get},
+        {2, listen_shorts, vol_in_listen},
 
         {1, output_shorts, vol_out},
-        {2, set_shorts, vol_out_set},
-        {2, mod_shorts, vol_out_mod},
-        {2, get_shorts, vol_out_get},
+        {2, set_shorts,    vol_out_set},
+        {2, mod_shorts,    vol_out_mod},
+        {2, get_shorts,    vol_out_get},
+        {2, listen_shorts, vol_out_listen},
 
         {0, {"connect", "con", "c"}, con},
         {0, {"disconnect", "dconnect", "discon", "dcon", "disc", "dc"}, dcon},
@@ -300,7 +301,7 @@ CommandHandler::CommandHandler(Backend* backend) : m_backend(backend) {
         {0, get_shorts, get},
         {1, input_shorts, get_ins},
         {1, output_shorts, get_outs},
-        {1, {"connections", "cons", "c"}, get_cons},
+        {1, {"connected", "con", "c"}, get_con},
         {1, {"aliases", "als", "a"}, get_als},
 
         {0, {"load", "l"},
@@ -326,10 +327,6 @@ CommandHandler::CommandHandler(Backend* backend) : m_backend(backend) {
         {0, {"rename", "ren", "rn"}, ren},
         {1, input_shorts, ren_in},
         {1, output_shorts, ren_out},
-
-        {0, {"listen", "listn", "l"}, listn},
-        {1, input_shorts, listn_in},
-        {1, output_shorts, listn_out},
     };
 
     m_commands = gen_abrevs(abrevs);
