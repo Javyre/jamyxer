@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include <chrono>
+#include <cstring>
 
 #include "backend.h"
 
@@ -59,6 +60,13 @@ void Backend::setup() {
     for (std::string o : settings.get_outputs()) {
         register_port(o, false);
     }
+    // Monitor
+    const std::string name =std::string("MONITOR");
+    m_monitor_port = {
+        jack_port_register(m_client, (name+LEFT_SUFFIX ).c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0),
+        jack_port_register(m_client, (name+RIGHT_SUFFIX).c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0),
+    };
+
 
     // === Activate client ===
     int active = jack_activate(m_client);
@@ -192,6 +200,13 @@ int Backend::callback(jack_nframes_t nframes) {
     // Mirror inputs to output versions (with volume controls)
     for (const auto& in : m_input_ports) {
         std::vector<jack_port_t*> out = m_implicit_output_ports[in.first];
+        SAMPLE_TYPE* mleft  = nullptr;
+        SAMPLE_TYPE* mright = nullptr;
+
+        if (settings.monitoring_input() && settings.get_monitor() == in.first) {
+             mleft  = (SAMPLE_TYPE*) jack_port_get_buffer(m_monitor_port[0], nframes);
+             mright = (SAMPLE_TYPE*) jack_port_get_buffer(m_monitor_port[1], nframes);
+        }
 
         SAMPLE_TYPE* oleft  = (SAMPLE_TYPE*) jack_port_get_buffer(out[0], nframes);
         SAMPLE_TYPE* oright = (SAMPLE_TYPE*) jack_port_get_buffer(out[1], nframes);
@@ -204,10 +219,22 @@ int Backend::callback(jack_nframes_t nframes) {
             oleft[i]  = ileft[i]  * volume_mod;
             oright[i] = iright[i] * volume_mod;
         }
+        if (mleft && mright) {
+            std::memcpy(mleft , oleft , sizeof(SAMPLE_TYPE) * nframes);
+            std::memcpy(mright, oright, sizeof(SAMPLE_TYPE) * nframes);
+        }
     }
 
     // Add inputs to the outputs theyre connected to with volume mod for each
     for (const auto& out : m_explicit_output_ports) {
+        SAMPLE_TYPE* mleft  = nullptr;
+        SAMPLE_TYPE* mright = nullptr;
+
+        if (settings.monitoring_output() && settings.get_monitor() == out.first) {
+             mleft  = (SAMPLE_TYPE*) jack_port_get_buffer(m_monitor_port[0], nframes);
+             mright = (SAMPLE_TYPE*) jack_port_get_buffer(m_monitor_port[1], nframes);
+        }
+
         SAMPLE_TYPE* oleft  = (SAMPLE_TYPE*) jack_port_get_buffer(out.second[0], nframes);
         SAMPLE_TYPE* oright = (SAMPLE_TYPE*) jack_port_get_buffer(out.second[1], nframes);
 
@@ -237,6 +264,10 @@ int Backend::callback(jack_nframes_t nframes) {
         for (jack_nframes_t i=0; i<nframes; i++) {
             oleft[i]  *= ovolume_mod;
             oright[i] *= ovolume_mod;
+        }
+        if (mleft && mright) {
+            std::memcpy(mleft , oleft , sizeof(SAMPLE_TYPE) * nframes);
+            std::memcpy(mright, oright, sizeof(SAMPLE_TYPE) * nframes);
         }
     }
 

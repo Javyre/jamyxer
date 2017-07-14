@@ -1,27 +1,26 @@
 {
-    "CONNECTIONS" :
-    {
-        "MASTER" :
-        [
+    "MONITOR" : {
+        "isinput": false,
+        "channel": "MASTER"
+    },
+    "CONNECTIONS" : {
+        "MASTER" : [
             "Mic",
             "PrivMPD",
             "PulseSink",
             "PulseSink2"
         ],
-        "PUBLIC" :
-        [
+        "PUBLIC" : [
             "Mic",
             "PubMPD"
         ],
-        "PRIVATE" :
-        [
+        "PRIVATE" : [
             "PrivMPD",
             "PulseSink",
             "PulseSink2"
         ]
     },
-    "INPUTS" :
-    {
+    "INPUTS" : {
         "PulseSink" : 100,
         "MPD"       : 100,
         "Mic"       : 90,
@@ -29,8 +28,7 @@
         "PubMPD"    : 100,
         "PulseSink2": 100
     },
-    "OUTPUTS" :
-    {
+    "OUTPUTS" : {
         "MASTER"  : 100.0,
         "PUBLIC"  : 100.0,
         "PRIVATE" : 100.0

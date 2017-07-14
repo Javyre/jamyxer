@@ -13,6 +13,8 @@ class ConfigWriter{
         std::map<std::string, float> m_input_volumes;
         std::map<std::string, float> m_output_volumes;
         std::map<std::string, std::vector<std::string>> m_connections;
+        std::string m_monitor_channel;
+        bool m_monitoring_input;
         virtual void load() = 0;
         virtual void save() = 0;
 };

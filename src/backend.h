@@ -19,6 +19,7 @@ class Backend {
         std::map<std::string, std::vector<jack_port_t*>> m_input_ports;
         std::map<std::string, std::vector<jack_port_t*>> m_implicit_output_ports;
         std::map<std::string, std::vector<jack_port_t*>> m_explicit_output_ports;
+        std::vector<jack_port_t*>m_monitor_port;
 
         bool m_try_recon;
         std::thread m_recon_loop;

@@ -26,6 +26,9 @@
 
 class Settings{
     private:
+        std::string m_monitor_channel;
+        bool m_monitoring_input;
+
         std::map<std::string, std::string> m_input_aliases;
         std::map<std::string, std::string> m_output_aliases;
 
@@ -81,6 +84,10 @@ class Settings{
         const std::vector<std::string> get_output_aliases();
 
         // === get ===
+        const std::string get_monitor();
+        const bool monitoring_input();
+        const bool monitoring_output();
+
         const std::vector<std::string> get_inputs();
         const std::vector<std::string> get_outputs();
 
@@ -95,6 +102,9 @@ class Settings{
         const bool is_connected(const std::string& input, const std::string& output);
 
         // === set ===
+        void monitor_input(const std::string input);
+        void monitor_output(const std::string output);
+
         void add_input(const std::string& name, float vol=1);
         void add_output(const std::string& name, float vol=1);
 

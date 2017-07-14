@@ -25,6 +25,12 @@ class JSONWriter : public ConfigWriter {
             cfg_file.close();
 
             //
+            // === LOAD MONITOR ===
+            //
+            m_monitoring_input = root["MONITOR"]["isinput"].asBool();
+            m_monitor_channel  = root["MONITOR"]["channel"].asString();
+
+            //
             // === LOAD INPUTS ===
             //
 
@@ -73,6 +79,10 @@ class JSONWriter : public ConfigWriter {
 
         void save() {
             Json::Value root;
+
+            root["MONITOR"]["isinput"] = m_monitoring_input;
+            root["MONITOR"]["channel"] = m_monitor_channel;
+
             for (const auto& p : m_input_volumes)
                 root["INPUTS"][p.first] = p.second * 100;
 

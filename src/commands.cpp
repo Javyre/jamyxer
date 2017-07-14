@@ -119,6 +119,11 @@ std::string get(std::vector<std::string> args, Backend* backend, const int fd) {
                 o.push_back(a + " : " + backend->settings.get_output_name(a));
             return o;
         };
+    } else if (target_type == "monitor" || target_type == "mon"){
+        if (args.size() == 2 && (args[1] == "input" || args[1] == "in")) {
+            return std::to_string(backend->settings.monitoring_input());
+        }
+        return backend->settings.get_monitor();
     } else
         throw CommandHandler::CommandException("Unknown target_type: `"+target_type+"`");
 
@@ -194,11 +199,34 @@ std::string ren(std::vector<std::string> args, Backend* backend, const int fd) {
     return "Renamed "+old_name+" -> "+new_name+" ...";
 }
 
+std::string mon(std::vector<std::string> args, Backend* backend, const int fd) {
+    if (args.size() < 2)
+        throw CommandHandler::InvalidNArgs(2, args.size());
+
+    std::string target_type = args[0];
+    std::string target = args[1];
+
+    std::function<void(std::string)> set_mon_func;
+
+    if (target_type == "input" || target_type == "in")
+        set_mon_func = [&](std::string i){ backend->settings.monitor_input(i); };
+    else if (target_type == "output" || target_type == "out")
+        set_mon_func = [&](std::string o){ backend->settings.monitor_output(o); };
+    else
+        throw CommandHandler::CommandException("Invalid target_type: `"+target_type+"`");
+
+    set_mon_func(target);
+    return "Monitoring "+target+" now...";
+}
+
 #define CMD_ALIAS(o, e) \
 std::string o##_##e(std::vector<std::string> args, Backend* backend, const int fd){ \
     args.insert(args.begin(), std::string( #e )); \
     return o (args, backend, fd); \
 }
+
+CMD_ALIAS(mon, in);
+CMD_ALIAS(mon, out);
 
 CMD_ALIAS(add, in);
 CMD_ALIAS(add, out);
@@ -216,6 +244,8 @@ CMD_ALIAS(get, ins);
 CMD_ALIAS(get, outs);
 CMD_ALIAS(get, con);
 CMD_ALIAS(get, als);
+CMD_ALIAS(get, mon);
+CMD_ALIAS(get_mon, in);
 
 CMD_ALIAS(vol, in);
 CMD_ALIAS(vol_in, set);
@@ -277,6 +307,7 @@ CommandHandler::CommandHandler(Backend* backend) : m_backend(backend) {
     shorts mod_shorts    = {"mod", "m"};
     shorts get_shorts    = {"get", "g"};
     shorts listen_shorts = {"listen", "listn", "ln"};
+    shorts monitor_shorts= {"monitor", "mon", "mn"};
 
     // Initialize commands and some aliases...
     abrevs_list_t abrevs = {
@@ -304,6 +335,9 @@ CommandHandler::CommandHandler(Backend* backend) : m_backend(backend) {
         {1, {"connected", "con", "c"}, get_con},
         {1, {"aliases", "als", "a"}, get_als},
 
+        {1, monitor_shorts, get_mon},
+        {2, input_shorts, get_mon_in},
+
         {0, {"load", "l"},
             [](std::vector<std::string> a, Backend* b, const int fd){
                 b->shutdown();
@@ -317,16 +351,20 @@ CommandHandler::CommandHandler(Backend* backend) : m_backend(backend) {
             }},
 
         {0, {"add", "a"}, add},
-        {1, input_shorts, add_in},
+        {1, input_shorts,  add_in},
         {1, output_shorts, add_out},
 
         {0, {"remove", "rem", "rm"}, rem},
-        {1, input_shorts, rem_in},
+        {1, input_shorts,  rem_in},
         {1, output_shorts, rem_out},
 
         {0, {"rename", "ren", "rn"}, ren},
-        {1, input_shorts, ren_in},
+        {1, input_shorts,  ren_in},
         {1, output_shorts, ren_out},
+
+        {0, monitor_shorts, mon},
+        {1, input_shorts,  mon_in},
+        {1, output_shorts, mon_out},
     };
 
     m_commands = gen_abrevs(abrevs);

@@ -16,18 +16,22 @@ Settings::Settings(const std::string filename): m_filename(filename) { }
 void Settings::load() {
     SETTINGS_BACKEND backend(m_filename);
     backend.load();
-    m_input_volumes  = backend.m_input_volumes;
-    m_output_volumes = backend.m_output_volumes;
-    m_connections    = backend.m_connections;
+    m_input_volumes    = backend.m_input_volumes;
+    m_output_volumes   = backend.m_output_volumes;
+    m_connections      = backend.m_connections;
+    m_monitoring_input = backend.m_monitoring_input;
+    m_monitor_channel  = backend.m_monitor_channel;
 
     gen_aliases();
 }
 
 void Settings::save() {
     SETTINGS_BACKEND backend(m_filename);
-    backend.m_input_volumes  = m_input_volumes;
-    backend.m_output_volumes = m_output_volumes;
-    backend.m_connections    = m_connections;
+    backend.m_input_volumes    = m_input_volumes;
+    backend.m_output_volumes   = m_output_volumes;
+    backend.m_connections      = m_connections;
+    backend.m_monitoring_input = m_monitoring_input;
+    backend.m_monitor_channel  = m_monitor_channel;
     backend.save();
 }
 
@@ -97,6 +101,27 @@ const std::string Settings::get_output_name(const std::string& output) {
     return output;
 }
 
+
+///
+/// Get name of channel being monitored
+///
+const std::string Settings::get_monitor() {
+    return m_monitor_channel;
+}
+
+///
+/// Return true if channel being monitored is input
+///
+const bool Settings::monitoring_input() {
+    return m_monitoring_input;
+}
+
+///
+/// Return true if channel being monitored is output
+///
+const bool Settings::monitoring_output() {
+    return !m_monitoring_input;
+}
 
 ///
 /// Get vector containing all input aliases
@@ -221,6 +246,28 @@ const float Settings::get_output_volume(const std::string& output){
         throw OutputNotFound(o);
 
     return m_output_volumes[o];
+}
+
+///
+/// Set monitor to copy input channel
+///
+void Settings::monitor_input(const std::string input) {
+    const std::string i = get_input_name(input);
+    if (!is_input(i))
+        throw InputNotFound(i);
+    m_monitoring_input = true;
+    m_monitor_channel = i;
+}
+
+///
+/// Set monitor to copy output channel
+///
+void Settings::monitor_output(const std::string output) {
+    const std::string o = get_output_name(output);
+    if (!is_output(o))
+        throw OutputNotFound(o);
+    m_monitoring_input = false;
+    m_monitor_channel = o;
 }
 
 ///
